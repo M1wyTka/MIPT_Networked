@@ -100,7 +100,6 @@ void Client::SchedulePacketSend()
 
 void Client::InputClientMessage()
 {
-    // Data came from stdin
     std::array<std::byte, PACKET_SIZE> buffer;
     const size_t maxsize = PACKET_SIZE - sizeof(PacketHeader);
     ssize_t readed = read(input_.FD(), buffer.data() + sizeof(PacketHeader), maxsize);
@@ -114,9 +113,8 @@ void Client::InputClientMessage()
     outgoing_packets.push_back(std::move(buffer));
 }
 
-void Client::SendClientMessage()
+void Client::SendClientMessages()
 {
-    // We are ready to send packets
     while (!outgoing_packets.empty())
     {
         auto& raw = outgoing_packets.front();
@@ -124,7 +122,8 @@ void Client::SendClientMessage()
         auto res =
                 send(server_socket_.FD(), raw.data(), packet->header.size, 0);
 
-        if (res != packet->header.size) break;
+        if (res != packet->header.size)
+            break;
 
         outgoing_packets.pop_front();
     }
@@ -138,12 +137,13 @@ void Client::SendClientMessage()
 
 void Client::DisplayServerMessages()
 {
-    // We are ready to write to stdout
     while (!incoming_messages.empty())
     {
         auto& str = incoming_messages.front();
         auto written = write(output_.FD(), str.data(), str.size());
-        //VERIFY(written >= 0);
+        is_running_ = written >= 0;
+        assert(("Write failed", is_running_));
+
         if (static_cast<size_t>(written) < str.size())
         {
             str = str.substr(written);
@@ -167,7 +167,7 @@ void Client::ReceiveServerMessages()
             recv(server_socket_.FD(), buffer.data(), buffer.size(), 0);
 
     is_running_ = packet_size > 0;
-    assert(("Error on receiving", is_running_));
+    assert(("Packet receive failed", is_running_));
 
     packet_size -= sizeof(PacketHeader);
     Packet* packet = reinterpret_cast<Packet*>(buffer.data());
@@ -210,7 +210,7 @@ void Client::Run()
             }
             else if (event.events & EPOLLOUT)
             {
-                SendClientMessage();
+                SendClientMessages();
             }
             else if (event.events & EPOLLIN)
             {

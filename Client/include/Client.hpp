@@ -22,7 +22,7 @@ private:
     void SendEmptyMessage(PacketType type);
 
     void InputClientMessage();
-    void SendClientMessage();
+    void SendClientMessages();
 
     void ReceiveServerMessages();
     void DisplayServerMessages();
