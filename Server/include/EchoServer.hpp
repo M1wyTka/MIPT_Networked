@@ -1,13 +1,36 @@
 #pragma once
 
+#include <array>
+#include <unordered_map>
+#include <deque>
 #include <cstdint>
 #include <string>
-#include <sys/socket.h>
 
+#include <utility>
+#include <chrono>
+
+extern "C"
+{
+#include <sys/epoll.h>
+#include <sys/timerfd.h>
+#include <sys/socket.h>
+}
+
+#include <Packet/Packet.hpp>
 #include <SocketTools.hpp>
-#include <MessageTypes.hpp>
+
+
 
 class EchoServer {
+private:
+    struct Client
+            {
+                struct sockaddr_storage addr;
+                socklen_t len = sizeof(addr);
+                std::deque<std::array<char, PACKET_SIZE>> outgoing;
+                std::chrono::steady_clock::time_point last_alive;
+            };
+
 public:
     explicit EchoServer(int port);
     ~EchoServer();
@@ -15,23 +38,27 @@ public:
     void Run();
 
 private:
-    void InitServer(int port);
-    void ReceiveMessages();
+    void InitServer();
+    void InitSocket();
+    void ScheduleInitialEvents();
 
-    void ParseMessage(char* buffer);
-    std::string ParseMessageType(const std::string& message, MessageType& type);
+    void SendAllNewMessages();
+    bool SendOutgoing(Client& client);
+    void KillAllSilentClients();
 
-    void ReadDumbMessage(const std::string& sub_message);
+    void ReadReceivedPackets();
+    std::string GetClientPacketId(struct sockaddr_storage* addr);
+    void RegisterNewClient(struct sockaddr_storage* addr, std::string identifier);
 
-    void SendMessage();
-    void ReplyMessage();
+    void UpdateOutgoingMessages(Packet* packet, std::string identifier);
 
+    const int port_;
+    File kill_timer_;
+    File listener_;
+    File epoll_;
 
-    std::string port_;
+    bool new_messages;
     bool is_running_;
-    int sfd_;
-
-    static constexpr char delimiter_ = ',';
-    static constexpr int buffer_size_ = 1000;
+    std::unordered_map<std::string, Client> clients_;
 };
 

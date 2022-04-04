@@ -1,14 +1,30 @@
 #pragma once
+
+#include <dumb_stuff.hpp>
+
+extern "C"
+{
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/epoll.h>
+#include <sys/timerfd.h>
 #include <netdb.h>
-
+#include <fcntl.h>
+#include <unistd.h>
+}
 struct addrinfo;
 
 namespace muhsockets
 {
-namespace tools {
-    int create_dgram_socket(const char *address, const char *port, addrinfo *res_addr);
+    int epoll_ctl(const File &epoll, const File &file, int op, uint32_t events);
 
-} // namespace tools
+    namespace tools {
+        File create_dgram_socket(const char *dst_addr, const char *dst_port);
+
+        File pick_addrinfo_and_create_socket(addrinfo* list, bool client);
+
+    }// namespace tools
 } // namespace muhsockets
+
+
+File make_timer(time_t interval_sec);

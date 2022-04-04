@@ -1,54 +1,110 @@
-#include "SocketTools.hpp"
-#include <fcntl.h>
-#include <unistd.h>
-#include <cstring>
+#include <SocketTools.hpp>
+#include <cstdlib>
+#include <cassert>
 
-static int get_dgram_socket(addrinfo *addr, bool should_bind, addrinfo *res_addr)
-{
-    for (addrinfo *ptr = addr; ptr != nullptr; ptr = ptr->ai_next)
+namespace muhsockets {
+
+    int epoll_ctl(const File &epoll, const File &file, int op, uint32_t events)
     {
-        if (ptr->ai_family != AF_INET || ptr->ai_socktype != SOCK_DGRAM || ptr->ai_protocol != IPPROTO_UDP)
-            continue;
-        int sfd = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
-        if (sfd == -1)
-            continue;
-
-        fcntl(sfd, F_SETFL, O_NONBLOCK);
-
-        int trueVal = 1;
-        setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &trueVal, sizeof(int));
-
-        if (res_addr)
-            *res_addr = *ptr;
-        if (!should_bind)
-            return sfd;
-
-        if (bind(sfd, ptr->ai_addr, ptr->ai_addrlen) == 0)
-            return sfd;
-
-        close(sfd);
+        struct epoll_event ev{
+            .events = events,
+            .data = {
+                    .fd = file.FD(),
+            },
+    };
+    return epoll_ctl(epoll.FD(), op, file.FD(), &ev);
     }
-    return -1;
+
+    namespace tools {
+        File create_dgram_socket(
+                const char *dst_addr,
+                const char *dst_port)
+        {
+            addrinfo hints{
+                    .ai_flags = dst_addr == nullptr ? AI_PASSIVE : 0,
+                    .ai_family = AF_INET,
+                    .ai_socktype = SOCK_DGRAM,
+                    .ai_protocol = IPPROTO_UDP,
+                    .ai_addrlen = 0,
+                    .ai_addr = nullptr,
+                    .ai_canonname = nullptr,
+                    .ai_next = nullptr,
+            };
+
+            addrinfo *list = nullptr;
+            assert(("Error getting addrinfo", getaddrinfo(dst_addr, dst_port, &hints, &list) != -1));
+            Defer freelist{[&](){ freeaddrinfo(list); }};
+
+            File result = pick_addrinfo_and_create_socket(list, dst_addr != nullptr);
+            assert(("Addrinfo pick failed", result.valid()));
+
+            assert(("Nonblock setup on socket failed", fcntl(result.FD(), F_SETFL, O_NONBLOCK) != -1));
+
+            int trueVal = 1;
+            setsockopt(result.FD(), SOL_SOCKET, SO_REUSEADDR, &trueVal, sizeof(int));
+
+            return result;
+        }
+
+
+        File pick_addrinfo_and_create_socket(addrinfo* list, bool client)
+        {
+            for (auto info = list; info != nullptr; info = info->ai_next)
+            {
+                File result{socket(info->ai_family, info->ai_socktype, info->ai_protocol)};
+                if (!result.valid()) continue;
+
+                if (client)
+                {
+                    if (connect(result.FD(), info->ai_addr, info->ai_addrlen) == -1)
+                    {
+                        continue;
+                    }
+
+                    return result;
+                }
+                else
+                {
+                    // Receive packets from our chosen address
+                    if (bind(result.FD(), info->ai_addr, info->ai_addrlen) == -1)
+                    {
+                        continue;
+                    }
+
+                    // Send to "anywhere"
+                    return result;
+                }
+            }
+
+            return File{};
+        }
+
+    }
 }
 
-int muhsockets::tools::create_dgram_socket(const char *address, const char *port, addrinfo *res_addr)
+
+
+File make_timer(time_t interval_sec)
 {
-    addrinfo hints;
-    memset(&hints, 0, sizeof(addrinfo));
+    File timer{timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK)};
 
-    bool isListener = !address;
+    if (!timer.valid()) return timer;
 
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_DGRAM;
-    if (isListener)
-        hints.ai_flags = AI_PASSIVE;
+    struct itimerspec spec{
+            .it_interval = {
+                    .tv_sec = interval_sec,
+                    .tv_nsec = 0,
+            },
+            .it_value = {
+                    .tv_sec = interval_sec,
+                    .tv_nsec = 0,
+            },
+    };
 
-    addrinfo *result = nullptr;
-    if (getaddrinfo(address, port, &hints, &result) != 0)
-        return 1;
+    if (timerfd_settime(timer.FD(), 0, &spec, nullptr) == -1)
+    {
+        return {};
+    }
 
-    int sfd = get_dgram_socket(result, isListener, res_addr);
-
-    //freeaddrinfo(result);
-    return sfd;
+    return timer;
 }

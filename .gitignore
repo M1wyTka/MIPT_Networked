@@ -22,7 +22,7 @@
 
 # Compiled Static libraries
 *.lai
-*.la
+*.lag
 *.a
 *.lib
 
@@ -32,6 +32,8 @@
 *.app
 
 cmake-build-debug
+cmake-build-network
 .idea
 Extras/include/concurrency
 Extras/source/concurrency
+later
