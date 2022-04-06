@@ -136,7 +136,7 @@ void EchoServer::ReadReceivedPackets()
 
     if (!clients_.contains(identifier))
     {
-        std::cout << identifier << " -- unknown client!";
+        std::cout << identifier << " -- unknown client_!";
         return;
     }
 
@@ -203,7 +203,7 @@ std::string EchoServer::GetClientPacketId(struct sockaddr_storage *addr)
 
 void EchoServer::RegisterNewClient(struct sockaddr_storage *addr, std::string identifier)
 {
-    std::cout << "New client " << identifier << " registered." << std::endl;
+    std::cout << "New client_ " << identifier << " registered." << std::endl;
     socklen_t len = sizeof(sockaddr_storage);
 
     if (!clients_.contains(identifier))

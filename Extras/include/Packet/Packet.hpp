@@ -4,7 +4,7 @@
 #include <utility>
 
 enum class PacketType : uint32_t
-        { None, Dumb, Connect, Alive };
+        { None, Dumb, Connect, Alive, Ping, GameStart, ServerChange};
 
 
 constexpr size_t PACKET_SIZE = 1500;
