@@ -112,22 +112,13 @@ static std::string get_input()
 
 void LobbyClient::Run()
 {
-    //std::future<std::string> future = std::async(get_input);
     while (is_running_)
     {
         ENetEvent event;
         std::string command;
 
-        //bool is_input_ready = future.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
-
-        while (enet_host_service(client_, &event, 10) > 0)//  || is_input_ready)
+        while (enet_host_service(client_, &event, 10) > 0))
         {
-            //if (is_input_ready && future.get() == "start") {
-            //    is_input_ready = false;
-//
-            //    //future = std::async(get_input);
-            //    SendStartGamePacket();
-            //}
             switch (event.type)
             {
                 case ENET_EVENT_TYPE_CONNECT:
