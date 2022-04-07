@@ -63,11 +63,10 @@ void PlayingServer::ReadClientPacket(ENetPeer *source, ENetPacket *client_packet
 
 void PlayingServer::UpdateClientPing(ENetPeer *source)
 {
-    client_infos_[source].ping = std::chrono::duration_cast<std::chrono::seconds>
+    client_infos_[source].ping = std::chrono::duration_cast<std::chrono::nanoseconds>
             (std::chrono::steady_clock::now() -  client_infos_[source].last_alive);
-    client_infos_[source].last_alive = std::chrono::steady_clock::now();
 
-    std::string ping = client_infos_[source].u_id + " " + std::to_string(client_infos_[source].ping.count()) + "s";
+    std::string ping = client_infos_[source].u_id + " " + std::to_string(client_infos_[source].ping.count()) + "ns";
 
     PacketHeader header = {
             .type = PacketType::Dumb,
@@ -110,7 +109,7 @@ void PlayingServer::PingAllClients()
 
     for(auto&[client_peer, client_info] : client_infos_)
     {
-        client_info.ping = std::chrono::duration_cast<std::chrono::seconds>
+        client_info.ping = std::chrono::duration_cast<std::chrono::nanoseconds>
                 (std::chrono::steady_clock::now() -  client_info.last_alive);
         client_info.last_alive = std::chrono::steady_clock::now();
 
