@@ -25,7 +25,6 @@ include(${CPM_DOWNLOAD_LOCATION})
 
 set(CPM_USE_LOCAL_PACKAGES True)
 
-add_subdirectory(Client)
+add_subdirectory(hw1)
 add_subdirectory(Extras)
-add_subdirectory(Server)
 add_subdirectory(hw2)
