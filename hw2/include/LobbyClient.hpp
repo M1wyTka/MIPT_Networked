@@ -12,8 +12,8 @@ public:
     ~LobbyClient();
 
     void Run();
-private:
 
+private:
     void InitClient();
     void InitLobbyConnection();
     void InitPlayServerConnection(Packet* packet);

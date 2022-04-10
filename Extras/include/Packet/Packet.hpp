@@ -4,7 +4,7 @@
 #include <utility>
 
 enum class PacketType : uint32_t
-        { None, Dumb, Connect, Alive, Ping, GameStart, ServerChange};
+        { None, Dumb, Connect, Alive, Ping, GameStart, GameState, ServerChange};
 
 
 constexpr size_t PACKET_SIZE = 1500;
@@ -18,4 +18,9 @@ struct PacketHeader
 struct Packet {
     PacketHeader header;
     std::byte data[PACKET_SIZE];
+};
+
+struct UnboundPacket {
+    PacketHeader header;
+    std::byte data[];
 };
