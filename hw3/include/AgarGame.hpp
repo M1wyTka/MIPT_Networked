@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <vector>
 #include <deque>
+#include <string>
 
 static constexpr int ui_len = 15;
 class AgarGame
@@ -19,9 +20,10 @@ public:
 
     void StartGame();
 
-    void AddPlayerInputs(std::string player_u_id);
+    void SetPlayerInputs(std::string player_u_id, Vec2 input);
 
     std::string CreatePlayer();
+    void KillPlayer(std::string player_u_id);
 
     void Step(float dt);
     std::vector<EntityPair> GetGameState();

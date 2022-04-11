@@ -16,6 +16,7 @@ private:
     void InitAgarServer();
 
     void AddNewPlayer(ENetPeer* new_peer);
+    void KillPlayer(ENetPeer* new_peer);
     void SendUIDBack(ENetPeer* back_peer, std::string uid);
 
     void ReadClientPacket(ENetPeer* peer, ENetPacket* packet);

@@ -40,10 +40,12 @@ std::string AgarGame::GetUniqueID()
     return rand_str;
 }
 
-void AgarGame::AddPlayerInputs(std::string player_u_id)
+void AgarGame::SetPlayerInputs(std::string player_u_id, Vec2 input)
 {
-    ent_by_uid_[player_u_id]->vel.x = 1;
-    ent_by_uid_[player_u_id]->vel.y = 1;
+    if(ent_by_uid_.find(player_u_id) == ent_by_uid_.end())
+        return;
+    ent_by_uid_[player_u_id]->vel.x = input.x;
+    ent_by_uid_[player_u_id]->vel.y = input.y;
 }
 
 GameEntity AgarGame::CreateRandomEntity()
@@ -83,18 +85,23 @@ std::string AgarGame::CreatePlayer()
     return uid;
 }
 
+void AgarGame::KillPlayer(std::string player_u_id)
+{
+    ent_by_uid_[player_u_id]->dead = true;
+}
+
 void AgarGame::Step(float dt)
 {
     if(!is_running_)
         return;
-
-    FreeKilled();
 
     ApplyInputs();
 
     UpdatePositions(dt);
 
     CheckCollision();
+
+    FreeKilled();
 }
 
 void AgarGame::FreeKilled()
@@ -129,11 +136,12 @@ void AgarGame::UpdatePositions(float dt)
                 .x = entity.pos.x - entity.target.x,
                 .y = entity.pos.y - entity.target.y
         };
-        if(SqLen(diff) < 0.01)
+
+        if(SqLen(diff) < entity.size)
         {
             entity.target = GetRandomCoordinate();
-            entity.vel.x = (entity.target.x - entity.pos.x) / 10;
-            entity.vel.y = (entity.target.y - entity.pos.y) / 10;
+            entity.vel.x = (entity.target.x - entity.pos.x) / 3;
+            entity.vel.y = (entity.target.y - entity.pos.y) / 3;
         }
     }
 }
@@ -174,7 +182,7 @@ void AgarGame::CheckCollision()
                     .x =  entities_[i].pos.x - entities_[j].pos.x,
                     .y = entities_[i].pos.y - entities_[j].pos.y
             };
-            if(SqLen(diff) < entities_[i].size + entities_[j].size)
+            if(SqLen(diff) < (entities_[i].size + entities_[j].size)*(entities_[i].size + entities_[j].size))
                 ResolveEatCondition(entities_[i], entities_[j]);
         }
     }
@@ -215,8 +223,8 @@ void AgarGame::MoveRandomPlace(GameEntity &a)
     if(a.is_player)
         return;
 
-    a.vel.x = (a.target.x - a.pos.x) / 10;
-    a.vel.y = (a.target.y - a.pos.y) / 10;
+    a.vel.x = (a.target.x - a.pos.x) / 3;
+    a.vel.y = (a.target.y - a.pos.y) / 3;
 }
 
 int AgarGame::GetRandomInt(int start, int end)

@@ -1,10 +1,10 @@
 #include <AgarServer.hpp>
-#include <Packet/Packet.hpp>
+#include <Packet.hpp>
 #include <cstring>
 
 AgarServer::AgarServer(int port) :
                         Server(port, 32, 2),
-                        game_(50, 50),
+                        game_(200, 200),
                         dt(std::chrono::nanoseconds::zero()),
                         last_frame(std::chrono::high_resolution_clock::now())
 {
@@ -49,7 +49,7 @@ void AgarServer::SendUIDBack(ENetPeer* back_peer, std::string uid)
 void AgarServer::SendGameState()
 {
     auto state = game_.GetGameState(); // Non-trivially copyable
-
+    std::cout << state.size() << std::endl;
     if(state.empty())
         return;
 
@@ -78,6 +78,16 @@ void AgarServer::SendGameState()
 
 void AgarServer::ReadClientPacket(ENetPeer* peer, ENetPacket* packet)
 {
+    Packet* pack = reinterpret_cast<Packet*>(packet->data);
+    switch(pack->header.type)
+    {
+        case PacketType::Input:
+            game_.SetPlayerInputs(UID_by_peer_[peer], *reinterpret_cast<Vec2 *>(pack->data));
+            break;
+        default:
+            break;
+    }
+
 
 }
 
@@ -94,6 +104,11 @@ void AgarServer::UpdateGameState()
     game_.Step(dt.count());
 
     dt = std::chrono::high_resolution_clock::now() - last_frame;
+}
+
+void AgarServer::KillPlayer(ENetPeer *new_peer)
+{
+
 }
 
 void AgarServer::Run()
@@ -117,6 +132,10 @@ void AgarServer::Run()
                     ReadClientPacket(event.peer, event.packet);
                     enet_packet_destroy(event.packet);
                     break;
+                case ENET_EVENT_TYPE_DISCONNECT:
+                    KillPlayer(event.peer);
+                    break;
+
                 default:
                     std::cout << "5" << std::endl;
                     break;
