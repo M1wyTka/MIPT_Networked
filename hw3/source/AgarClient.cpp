@@ -92,10 +92,13 @@ void AgarClient::DisplayGame()
             int size = cur_frame_info[i].entity.size;
             if(cur_frame_info[i].uid == client_uid_){
                 al_draw_circle(x, y, size, al_map_rgb(255, 255, 255), 1);
-                std::cout << x << " " << y << std::endl;
             }
             else
                 al_draw_circle(x, y, size, al_map_rgb(0, 255, 0), 1);
+
+            std::cout << "Pos " << x << " " << y << std::endl
+            << "Target " << cur_frame_info[i].entity.target.x << " " << cur_frame_info[i].entity.target.y << std::endl
+            << "Vel " << cur_frame_info[i].entity.vel.x << " " << cur_frame_info[i].entity.vel.y << std::endl;
         }
         }
         //al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Hello world!");

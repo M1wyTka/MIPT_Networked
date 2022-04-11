@@ -4,7 +4,7 @@
 
 AgarServer::AgarServer(int port) :
                         Server(port, 32, 2),
-                        game_(200, 200),
+                        game_(640, 480),
                         dt(std::chrono::nanoseconds::zero()),
                         last_frame(std::chrono::high_resolution_clock::now())
 {
@@ -95,12 +95,6 @@ void AgarServer::UpdateGameState()
 {
     static float i = 0;
     last_frame = std::chrono::high_resolution_clock::now();
-
-    //if(dt.count() < 1)
-    //{
-    //    dt += std::chrono::high_resolution_clock::now() - last_frame;
-    //    return;
-    //}
     game_.Step(dt.count());
 
     dt = std::chrono::high_resolution_clock::now() - last_frame;
@@ -108,12 +102,11 @@ void AgarServer::UpdateGameState()
 
 void AgarServer::KillPlayer(ENetPeer *new_peer)
 {
-
+    game_.KillPlayer(UID_by_peer_[new_peer]);
 }
 
 void AgarServer::Run()
 {
-    std::cout << "1" << std::endl;
     while (is_running_)
     {
         ENetEvent event;
@@ -122,13 +115,11 @@ void AgarServer::Run()
             switch (event.type)
             {
                 case ENET_EVENT_TYPE_CONNECT:
-                    std::cout << "3" << std::endl;
                     client_peers_.push_back(event.peer);
                     AddNewPlayer(event.peer);
                     enet_packet_destroy(event.packet);
                     break;
                 case ENET_EVENT_TYPE_RECEIVE:
-                    std::cout << "4" << std::endl;
                     ReadClientPacket(event.peer, event.packet);
                     enet_packet_destroy(event.packet);
                     break;
@@ -137,7 +128,6 @@ void AgarServer::Run()
                     break;
 
                 default:
-                    std::cout << "5" << std::endl;
                     break;
             };
         }

@@ -31,11 +31,7 @@ public:
 private:
     GameEntity CreateRandomEntity();
 
-    void FreeKilled();
-
-    void ApplyInputs();
     void UpdatePositions(float dt);
-    void ClipPosition(Vec2& pos);
 
     void CheckCollision();
     void ResolveEatCondition(GameEntity& a, GameEntity& b);
@@ -51,7 +47,7 @@ private:
     int width_;
     int height_;
 
-    static constexpr int max_entity_amt { 10 };
+    static constexpr int max_entity_amt { 50 };
     std::unordered_map<GameEntity*, std::string> uid_by_ent_{};
     std::unordered_map<std::string, GameEntity*> ent_by_uid_{};
     std::deque<GameEntity> entities_{};
