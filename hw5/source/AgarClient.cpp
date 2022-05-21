@@ -25,15 +25,8 @@ AgarClient::~AgarClient()
 
 void AgarClient::SendInput()
 {
-    PacketHeader header = {
-            .type = PacketType::Input,
-            .size = sizeof(PacketHeader) + sizeof(Vec2)
-    };
-    Packet packet = {
-            .header = header
-    };
-
-    std::memmove(packet.data, &input, sizeof(Vec2));
+    Packet packet(PacketType::Input);
+    PackData(packet, sizeof(Vec2), &input);
 
     ENetPacket *en_packet = enet_packet_create(&packet, packet.header.size, ENET_PACKET_FLAG_UNSEQUENCED);
     enet_peer_send(play_server_, 0,  en_packet);
@@ -95,9 +88,9 @@ void AgarClient::RedrawGame()
             else
                 al_draw_circle(x, y, size, al_map_rgb(0, 255, 0), 1);
 
-            std::cout << "Pos " << x << " " << y << std::endl
-                      << "Target " << game_state->at(i).entity.target.x << " " << game_state->at(i).entity.target.y << std::endl
-                      << "Vel " << game_state->at(i).entity.vel.x << " " << game_state->at(i).entity.vel.y << std::endl;
+            std::cout << "Pos " << x << " " << y << "\n"
+                      << "Target " << game_state->at(i).entity.target.x << " " << game_state->at(i).entity.target.y << "\n"
+                      << "Vel " << game_state->at(i).entity.vel.x << " " << game_state->at(i).entity.vel.y << "\n";
         }
     }
     //al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Hello world!");
@@ -203,14 +196,7 @@ void AgarClient::ReadGameState(Packet *packet)
 
 void AgarClient::PingBack()
 {
-    PacketHeader header = {
-            .type = PacketType::Alive,
-            .size = sizeof(PacketType)
-
-    };
-    Packet packet = {
-            .header = header
-    };
+    Packet packet(PacketType::Alive);
 
     ENetPacket *en_packet = enet_packet_create(&packet, packet.header.size, ENET_PACKET_FLAG_UNSEQUENCED);
     enet_peer_send(play_server_, 0,  en_packet);
@@ -254,19 +240,13 @@ void AgarClient::InitGameConnection()
 
     if (!play_server_)
     {
-        std::cout <<"Cannot connect to lobby" << std::endl;
+        std::cout <<"Cannot connect to lobby\n";
     }
 }
 
 void AgarClient::SendStartGamePacket()
 {
-    PacketHeader header = {
-            .type = PacketType::GameStart,
-            .size = sizeof(PacketHeader)
-    };
-    Packet packet = {
-            .header = header
-    };
+    Packet packet(PacketType::GameStart);
 
     ENetPacket *en_packet = enet_packet_create(&packet, packet.header.size, ENET_PACKET_FLAG_UNSEQUENCED);
     enet_peer_send(play_server_, 0,  en_packet);
@@ -281,7 +261,7 @@ void AgarClient::ProcessNetwork()
         switch (event.type)
         {
             case ENET_EVENT_TYPE_CONNECT:
-                std::cout << "Connection with " << event.peer->address.host << ":" << event.peer->address.port << "established\n";
+                std::cout << "Connection with " << event.peer->address.host << ":" << event.peer->address.port << " established\n";
                 SendStartGamePacket();
                 break;
             case ENET_EVENT_TYPE_RECEIVE:
