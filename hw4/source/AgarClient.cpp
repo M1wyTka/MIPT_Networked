@@ -54,7 +54,7 @@ void AgarClient::DisplayGame()
                 break;
 
             case ALLEGRO_EVENT_KEY_DOWN:
-                ReadInput(event);
+                ReadInputGame(event);
                 break;
             case ALLEGRO_EVENT_DISPLAY_CLOSE:
                 done = true;
@@ -104,7 +104,7 @@ void AgarClient::RedrawGame()
     al_flip_display();
 }
 
-void AgarClient::ReadInput(ALLEGRO_EVENT &event)
+void AgarClient::ReadInputGame(ALLEGRO_EVENT &event)
 {
     static constexpr int speed = 50;
     switch (event.keyboard.keycode) {

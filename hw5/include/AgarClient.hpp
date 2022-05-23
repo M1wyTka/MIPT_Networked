@@ -33,7 +33,7 @@ private:
     void ReadPing(Packet* packet);
 
     void SendStartGamePacket();
-    void ReadInput(ALLEGRO_EVENT& event);
+    void ReadInputGame(ALLEGRO_EVENT& event);
     void SendInput();
 
     void ReadServerPacket(ENetPacket *client_packet);

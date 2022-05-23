@@ -115,8 +115,6 @@ void LobbyClient::Run()
     while (is_running_)
     {
         ENetEvent event;
-        std::string command;
-
         while (enet_host_service(client_, &event, 10) > 0)
         {
             switch (event.type)
