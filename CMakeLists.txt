@@ -27,7 +27,7 @@ set(CPM_USE_LOCAL_PACKAGES True)
 
 #add_subdirectory(Extras)
 #add_subdirectory(hw1)
-add_subdirectory(hw2)
+#add_subdirectory(hw2)
 add_subdirectory(hw3)
 add_subdirectory(hw4)
 add_subdirectory(hw5)
