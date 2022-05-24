@@ -97,3 +97,13 @@ target_link_libraries(networked_hw6_lobby enet)
 target_include_directories(networked_hw6_lobby
         PUBLIC
         $<BUILD_INTERFACE:${enet_SOURCE_DIR}/include>)
+
+if (WIN32)
+    add_custom_command(TARGET networked_hw6_client POST_BUILD COMMAND ${CMAKE_COMMAND}
+            -E copy_if_different "${CMAKE_BINARY_DIR}/_deps/allegro-build/lib/allegro-debug-5.2.dll" "${CMAKE_BINARY_DIR}/hw6/allegro-debug-5.2.dll")
+    add_custom_command(TARGET networked_hw6_client POST_BUILD COMMAND ${CMAKE_COMMAND}
+            -E copy_if_different "${CMAKE_BINARY_DIR}/_deps/allegro-build/lib/allegro_font-debug-5.2.dll" "${CMAKE_BINARY_DIR}/hw6/allegro_font-debug-5.2.dll")
+    add_custom_command(TARGET networked_hw6_client POST_BUILD COMMAND ${CMAKE_COMMAND}
+            -E copy_if_different "${CMAKE_BINARY_DIR}/_deps/allegro-build/lib/allegro_primitives-debug-5.2.dll" "${CMAKE_BINARY_DIR}/hw6/allegro_primitives-debug-5.2.dll")
+
+endif()
